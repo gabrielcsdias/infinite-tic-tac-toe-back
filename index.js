@@ -58,7 +58,7 @@ io.on("connection", (socket) => {
 
     room.players = room.players.filter((p) => p.id !== socket.id);
 
-    const otherPlayer = room.players.find((p) => p.uid !== socket.id);
+    const otherPlayer = room.players.find((p) => p.id !== socket.id);
     if (otherPlayer) {
       io.to(otherPlayer.id).emit("player-left", {
         leftSymbol: playerSymbol,
@@ -67,6 +67,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("create-room", ({ isPublic = true }) => {
+    console.log("create-room chamado, isPublic:", isPublic);
     let code;
     do {
       code = generateRoomCode();
@@ -115,7 +116,7 @@ io.on("connection", (socket) => {
       turn: room.turn,
     });
 
-    const otherPlayer = room.players.find((p) => p.uid !== socket.id);
+    const otherPlayer = room.players.find((p) => p.id !== socket.id);
     if (otherPlayer) {
       io.to(otherPlayer.id).emit("player-joined", {
         board: room.board,
