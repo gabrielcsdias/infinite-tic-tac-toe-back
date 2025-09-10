@@ -5,16 +5,22 @@ const { Server } = require("socket.io");
 const app = express();
 const server = createServer(app);
 
+const PORT = process.env.PORT || 3001;
+
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000", "http://192.168.1.7:3000"],
+    origin: [
+      "http://localhost:3000",
+      "http://192.168.1.7:3000",
+      "https://infinite-tic-tac-toe-front.vercel.app",
+    ],
     methods: ["GET", "POST"],
   },
 });
 
-server.listen(3001, () =>
-  console.log("Server running on port http://localhost:3001")
-);
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 app.get("/", (req, res) => {
   res.json("API JOGO DA VELHA");
@@ -32,10 +38,10 @@ function generateRoomCode(length = 5) {
 }
 
 io.on("connection", (socket) => {
-  // console.log("a user connected", socket.id);
+  console.log("a user connected", socket.id);
 
   socket.on("disconnect", () => {
-    // console.log("user disconnected", socket.id);
+    console.log("user disconnected", socket.id);
     if (Object.values(rooms).length === 0) return;
     const room = Object.values(rooms).find((r) =>
       r.players.some((p) => p.id === socket.id)
