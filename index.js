@@ -66,7 +66,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("create-room", (isPublic = true) => {
+  socket.on("create-room", ({ isPublic = true }) => {
     let code;
     do {
       code = generateRoomCode();
