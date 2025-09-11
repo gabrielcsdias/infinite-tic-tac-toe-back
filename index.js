@@ -184,7 +184,7 @@ io.on("connection", (socket) => {
     if (!room) return;
 
     room.board = Array(9).fill(null);
-    room.turn = "X";
+    room.turn = room.turn === "X" ? "O" : "X";
     room.players.forEach((p) => (p.moves = []));
 
     io.to(roomCode).emit("rematch-started", {
