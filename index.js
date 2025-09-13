@@ -104,6 +104,7 @@ io.on("connection", (socket) => {
     // so entrar limpar o tabuleiro se for o segundo jogador
     room.board = Array(9).fill(null);
     room.turn = "X";
+    room.players.forEach((p) => (p.moves = []));
 
     const availableSymbol =
       room.players.find((p) => p.id !== socket.id)?.symbol === "X" ? "O" : "X";
@@ -138,6 +139,7 @@ io.on("connection", (socket) => {
 
       room.board = Array(9).fill(null);
       room.turn = "X";
+      room.players.forEach((p) => (p.moves = []));
 
       room.players.push({ id: socket.id, symbol: availableSymbol, moves: [] });
       socket.join(availableRoomCode);
@@ -186,8 +188,8 @@ io.on("connection", (socket) => {
 
     room.board = Array(9).fill(null);
     room.turn = room.winner === "X" ? "O" : "X";
-    room.players.forEach((p) => (p.moves = []));
     room.winner = null;
+    room.players.forEach((p) => (p.moves = []));
 
     io.to(roomCode).emit("rematch-started", {
       board: room.board,
