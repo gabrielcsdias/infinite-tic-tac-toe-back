@@ -78,6 +78,7 @@ io.on("connection", (socket) => {
       board: Array(9).fill(null),
       turn: "X",
       public: isPublic,
+      winner: null,
     };
 
     socket.join(code);
@@ -186,6 +187,7 @@ io.on("connection", (socket) => {
     room.board = Array(9).fill(null);
     room.turn = room.winner === "X" ? "O" : "X";
     room.players.forEach((p) => (p.moves = []));
+    room.winner = null;
 
     io.to(roomCode).emit("rematch-started", {
       board: room.board,
@@ -241,6 +243,7 @@ io.on("connection", (socket) => {
         room.board[a] === room.board[c]
       ) {
         winner = room.board[a];
+        room.winner = winner;
         break;
       }
     }
