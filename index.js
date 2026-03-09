@@ -44,7 +44,7 @@ io.on("connection", (socket) => {
     console.log("user disconnected", socket.id);
     if (Object.values(rooms).length === 0) return;
     const room = Object.values(rooms).find((r) =>
-      r.players.some((p) => p.id === socket.id)
+      r.players.some((p) => p.id === socket.id),
     );
     if (!room) return;
 
@@ -93,11 +93,11 @@ io.on("connection", (socket) => {
   socket.on("join-room", ({ code }) => {
     const room = rooms[code];
     if (!room) {
-      socket.emit("error", "Sala não existe");
+      socket.emit("error", "A sala com o código fornecido não foi encontrada.");
       return;
     }
     if (room.players.length >= 2) {
-      socket.emit("error", "Sala cheia");
+      socket.emit("error", "A sala já está cheia. Não é possível entrar.");
       return;
     }
 
@@ -129,35 +129,38 @@ io.on("connection", (socket) => {
 
   socket.on("join-random-room", () => {
     const availableRoomCode = Object.keys(rooms).find(
-      (code) => rooms[code].players.length === 1 && rooms[code].public
+      (code) => rooms[code].players.length === 1 && rooms[code].public,
     );
 
-    if (availableRoomCode) {
-      // Chama a lógica do join-room direto no servidor
-      const room = rooms[availableRoomCode];
-      const availableSymbol = room.players[0].symbol === "X" ? "O" : "X";
+    if (!availableRoomCode) {
+      socket.emit("error", "Não há salas públicas disponíveis.");
+      return;
+    }
 
-      room.board = Array(9).fill(null);
-      room.turn = "X";
-      room.players.forEach((p) => (p.moves = []));
+    // Chama a lógica do join-room direto no servidor
+    const room = rooms[availableRoomCode];
+    const availableSymbol = room.players[0].symbol === "X" ? "O" : "X";
 
-      room.players.push({ id: socket.id, symbol: availableSymbol, moves: [] });
-      socket.join(availableRoomCode);
+    room.board = Array(9).fill(null);
+    room.turn = "X";
+    room.players.forEach((p) => (p.moves = []));
 
-      socket.emit("room-joined", {
-        roomCode: availableRoomCode,
+    room.players.push({ id: socket.id, symbol: availableSymbol, moves: [] });
+    socket.join(availableRoomCode);
+
+    socket.emit("room-joined", {
+      roomCode: availableRoomCode,
+      board: room.board,
+      symbol: availableSymbol,
+      turn: room.turn,
+    });
+
+    const otherPlayer = room.players.find((p) => p.id !== socket.id);
+    if (otherPlayer) {
+      io.to(otherPlayer.id).emit("player-joined", {
         board: room.board,
-        symbol: availableSymbol,
         turn: room.turn,
       });
-
-      const otherPlayer = room.players.find((p) => p.id !== socket.id);
-      if (otherPlayer) {
-        io.to(otherPlayer.id).emit("player-joined", {
-          board: room.board,
-          turn: room.turn,
-        });
-      }
     }
   });
 
