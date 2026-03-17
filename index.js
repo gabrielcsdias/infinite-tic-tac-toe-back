@@ -79,6 +79,7 @@ io.on("connection", (socket) => {
       turn: "X",
       public: isPublic,
       winner: null,
+      scores: { X: 0, O: 0 },
     };
 
     socket.join(code);
@@ -87,6 +88,7 @@ io.on("connection", (socket) => {
       symbol: "X",
       board: rooms[code].board,
       turn: rooms[code].turn,
+      scores: rooms[code].scores,
     });
   });
 
@@ -104,6 +106,8 @@ io.on("connection", (socket) => {
     // so entrar limpar o tabuleiro se for o segundo jogador
     room.board = Array(9).fill(null);
     room.turn = "X";
+    room.winner = null;
+    room.scores = { X: 0, O: 0 };
     room.players.forEach((p) => (p.moves = []));
 
     const availableSymbol =
@@ -116,6 +120,7 @@ io.on("connection", (socket) => {
       board: room.board,
       symbol: availableSymbol,
       turn: room.turn,
+      scores: room.scores,
     });
 
     const otherPlayer = room.players.find((p) => p.id !== socket.id);
@@ -123,6 +128,7 @@ io.on("connection", (socket) => {
       io.to(otherPlayer.id).emit("player-joined", {
         board: room.board,
         turn: room.turn,
+        scores: room.scores,
       });
     }
   });
@@ -143,6 +149,8 @@ io.on("connection", (socket) => {
 
     room.board = Array(9).fill(null);
     room.turn = "X";
+    room.winner = null;
+    room.scores = { X: 0, O: 0 };
     room.players.forEach((p) => (p.moves = []));
 
     room.players.push({ id: socket.id, symbol: availableSymbol, moves: [] });
@@ -153,6 +161,7 @@ io.on("connection", (socket) => {
       board: room.board,
       symbol: availableSymbol,
       turn: room.turn,
+      scores: room.scores,
     });
 
     const otherPlayer = room.players.find((p) => p.id !== socket.id);
@@ -160,6 +169,7 @@ io.on("connection", (socket) => {
       io.to(otherPlayer.id).emit("player-joined", {
         board: room.board,
         turn: room.turn,
+        scores: room.scores,
       });
     }
   });
@@ -197,6 +207,7 @@ io.on("connection", (socket) => {
     io.to(roomCode).emit("rematch-started", {
       board: room.board,
       turn: room.turn,
+      scores: room.scores,
     });
   });
 
@@ -249,6 +260,7 @@ io.on("connection", (socket) => {
       ) {
         winner = room.board[a];
         room.winner = winner;
+        room.scores[winner] += 1;
         break;
       }
     }
@@ -257,6 +269,7 @@ io.on("connection", (socket) => {
       board: room.board,
       turn: room.turn,
       winner,
+      scores: room.scores,
     });
   });
 });
